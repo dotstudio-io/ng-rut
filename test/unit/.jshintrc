@@ -1,0 +1,8 @@
+{
+  "jasmine": true,
+  "node": true,
+
+  "globals": {
+    "inject": true
+  }
+}
