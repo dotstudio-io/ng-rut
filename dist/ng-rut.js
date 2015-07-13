@@ -20,8 +20,8 @@
   }
   function validate(val) {
     val = clean(val);
-    if (val.length < 3) {
-      return val;
+    if (!val || !val.length) {
+      return true;
     }
     var verifier = val.substr(-1, 1);
     var digits = val.substr(0, val.length - 1);
@@ -36,23 +36,6 @@
     }
     return String(s ? s - 1 : k) === verifier;
   }
-  function isValid(val) {
-    val = validate(val);
-    ngModel.$setValidity("rut", val);
-    return val;
-  }
-  function validateAndFilter(val) {
-    if (isValid(val)) {
-      return val;
-    }
-    return null;
-  }
-  function validateAndFormat(val) {
-    if (isValid(val)) {
-      return format(val);
-    }
-    return null;
-  }
   angular.module("ngRut", []).factory("ngRut", function() {
     return {
       validate: validate,
@@ -64,13 +47,21 @@
       restrict: "A",
       require: "ngModel",
       link: function($scope, $element, $attrs, ngModel) {
-        if ($element[0].tagName === "INPUT") {
-          throw new TypeError("NGRUT: This directive must be used on INPUT elements only and element is " + $element[0].tagName);
+        if ($element[0].tagName !== "INPUT") {
+          throw new TypeError("NG-RUT: This directive must be used on INPUT elements only and element is " + $element[0].tagName + ".");
         }
-        ngModel.$parsers.unshift(validateAndFilter);
-        ngModel.$formatters.unshift(validateAndFormat);
-        $element.on("input", function() {
-          $element.val(format($element.val()));
+        if (!ngModel) {
+          console.warn("NG-RUT: No ngModel associated to the input element");
+          return;
+        }
+        ngModel.$formatters.unshift(function(value) {
+          return format(ngModel.$modelValue);
+        });
+        ngModel.$parsers.unshift(function(value) {
+          ngModel.$setValidity("rut", validate(value));
+          ngModel.$setViewValue(format(value));
+          ngModel.$render();
+          return clean(value);
         });
       }
     };

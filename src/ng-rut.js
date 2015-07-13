@@ -74,9 +74,9 @@
   function validate(val) {
     val = clean(val);
 
-    /* Check if value is too short */
-    if (val.length < 3) {
-      return val;
+    /* Check if there's a value to validate */
+    if (!val || !val.length) {
+      return true;
     }
 
     /* Get verifier digit */
@@ -101,48 +101,6 @@
     return String(s ? s - 1 : k) === verifier;
   }
 
-  /**
-   * Check if a value is a valid RUT.
-   *
-   * @param {String} val The value to check.
-   * @return {String} The value.
-   */
-  function isValid(val) {
-    val = validate(val);
-
-    ngModel.$setValidity('rut', val);
-
-    return val;
-  }
-
-  /**
-   * Filters and validates a value as RUT.
-   *
-   * @param {String} val The value to check.
-   * @return {String} The value if valid or null.
-   */
-  function validateAndFilter(val) {
-    if (isValid(val)) {
-      return val;
-    }
-
-    return null;
-  }
-
-  /**
-   * Validates and formats a value as RUT.
-   *
-   * @param {String} val The value to check.
-   * @return {String} The formatted value if valid or null.
-   */
-  function validateAndFormat(val) {
-    if (isValid(val)) {
-      return format(val);
-    }
-
-    return null;
-  }
-
   /* Define the Angular module */
   angular.module('ngRut', []).
 
@@ -158,21 +116,34 @@
   /* Create the directive */
   directive('ngRut', function () {
     return {
+      /* Restrict to an attribute type */
       restrict: 'A',
+
+      /* Element must have ng-model attribute */
       require: 'ngModel',
+
       link: function ($scope, $element, $attrs, ngModel) {
-        /* Check if element is an input */
-        if ($element[0].tagName === 'INPUT') {
-          throw new TypeError("NGRUT: This directive must be used on INPUT elements only and element is " + $element[0].tagName);
+        /* Check if $element is an input */
+        if ($element[0].tagName !== 'INPUT') {
+          throw new TypeError("NG-RUT: This directive must be used on INPUT elements only and element is " + $element[0].tagName + ".");
         }
 
-        /* Assign model validators and formatters */
-        ngModel.$parsers.unshift(validateAndFilter);
-        ngModel.$formatters.unshift(validateAndFormat);
+        /* Check if it $element a NgModel associated */
+        if (!ngModel) {
+          console.warn("NG-RUT: No ngModel associated to the input element");
+          return;
+        }
 
-        /* Format the input element on input */
-        $element.on('input', function () {
-          $element.val(format($element.val()));
+        ngModel.$formatters.unshift(function (value) {
+          return format(ngModel.$modelValue);
+        });
+
+        ngModel.$parsers.unshift(function (value) {
+          ngModel.$setValidity('rut', validate(value));
+          ngModel.$setViewValue(format(value));
+          ngModel.$render();
+
+          return clean(value);
         });
       }
     };
