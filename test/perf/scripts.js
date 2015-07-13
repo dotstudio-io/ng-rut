@@ -12,7 +12,8 @@
 
     function ($scope, ngRut) {
       var iterations = $scope.iterations = 100000;
-      $scope.rut = 222222222;
+
+      $scope.rut = 222222228;
 
       /** PERFORMANCE TESTING **/
       var start;

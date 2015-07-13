@@ -51,4 +51,13 @@ describe('The ngRut directive', function () {
     expect($scope.form.rut.$viewValue).toBe("22.222.222-2");
     expect($scope.form.$valid).toBe(true);
   });
+
+  it('Validates and formats an invalid RUT in the input element', function () {
+    $scope.rut = 222222228;
+
+    $scope.$digest();
+
+    expect($scope.form.rut.$viewValue).toBe("22.222.222-8");
+    expect($scope.form.$invalid).toBe(true);
+  });
 });
