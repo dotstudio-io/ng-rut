@@ -162,8 +162,8 @@
       require: 'ngModel',
       link: function ($scope, $element, $attrs, ngModel) {
         /* Check if element is an input */
-        if (element[0].tagName === 'INPUT') {
-          throw new TypeError("[ngRut] directive must be used on [INPUT] elements only!");
+        if ($element[0].tagName === 'INPUT') {
+          throw new TypeError("NGRUT: This directive must be used on INPUT elements only and element is " + $element[0].tagName);
         }
 
         /* Assign model validators and formatters */

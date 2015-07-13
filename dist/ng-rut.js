@@ -64,8 +64,8 @@
       restrict: "A",
       require: "ngModel",
       link: function($scope, $element, $attrs, ngModel) {
-        if (element[0].tagName === "INPUT") {
-          throw new TypeError("[ngRut] directive must be used on [INPUT] elements only!");
+        if ($element[0].tagName === "INPUT") {
+          throw new TypeError("NGRUT: This directive must be used on INPUT elements only and element is " + $element[0].tagName);
         }
         ngModel.$parsers.unshift(validateAndFilter);
         ngModel.$formatters.unshift(validateAndFormat);
