@@ -136,6 +136,7 @@
 
         ngModel.$formatters.unshift(function (value) {
           ngModel.$setValidity('rut', validate(value));
+
           return format(ngModel.$modelValue);
         });
 
