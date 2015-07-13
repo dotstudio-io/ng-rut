@@ -1,3 +1,0 @@
-7/6 12:07:49.808  Auto-picking gateway based on GMT
-7/6 12:07:49.808      Find gateway closest to 03.00
-7/6 12:07:49.808      Gateway 2 (useast.battle.net at GMT 06) is closest to 03.00
