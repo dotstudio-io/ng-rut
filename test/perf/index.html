@@ -2,14 +2,108 @@
 <html>
 
 <head>
+  <meta name="viewport" content="initial-scale=1" />
   <meta charset="utf-8">
-  <title>ngRut Performance Test</title>
+
+  <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/angular_material/0.10.0/angular-material.min.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=RobotoDraft:300,400,500,700,400italic">
+
+  <title>ngRut Tests</title>
 </head>
 
 <body ng-app="App">
-  <div ng-controller="MainController"></div>
+  <md-content ng-controller="MainController" layout="column" layout-fill>
+    <md-toolbar>
+      <h1 class="md-toolbar-tools">
+        ngRut Test
+      </h1>
+    </md-toolbar>
 
-  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.1/angular.js"></script>
+    <div layout="row">
+      <div flex>
+        <md-card>
+          <md-subheader class="md-primary">Test form input</md-subheader>
+          <md-card-content>
+            <form name="form">
+              <md-input-container>
+                <label>RUT</label>
+                <input ng-model="rut" name="rut" ng-rut required>
+
+                <div ng-messages="form.rut.$error">
+                  <div ng-message="required">This is required.</div>
+                  <div ng-message="rut">The RUT is invalid.</div>
+                </div>
+              </md-input-container>
+            </form>
+          </md-card-content>
+        </md-card>
+
+        <md-card>
+          <md-subheader class="md-primary">Model value</md-subheader>
+          <md-card-content>
+            <span>{{ rut }}</span>
+          </md-card-content>
+        </md-card>
+
+        <md-card>
+          <md-subheader class="md-primary">View value</md-subheader>
+          <md-card-content>
+            <span>{{ form.rut.$viewValue }}</span>
+          </md-card-content>
+        </md-card>
+
+        <md-card>
+          <md-subheader class="md-primary">Format filter model value</md-subheader>
+          <md-card-content>
+            <span>{{ rut | ngRut }}</span>
+          </md-card-content>
+        </md-card>
+
+        <md-card>
+          <md-subheader class="md-primary">Validate filter model value</md-subheader>
+          <md-card-content>
+            <span>Is valid: {{ rut | ngRut:"validate" }}</span>
+          </md-card-content>
+        </md-card>
+      </div>
+
+      <div flex>
+        <md-card>
+          <md-subheader class="md-primary">Number of iterations per function</md-subheader>
+          <md-card-content>
+            <span>{{ iterations | number }}</span>
+          </md-card-content>
+        </md-card>
+
+        <md-card>
+          <md-subheader class="md-primary">Time to complete cleaning</md-subheader>
+          <md-card-content>
+            <span>{{ cleanTime | number }} ms</span>
+          </md-card-content>
+        </md-card>
+
+        <md-card>
+          <md-subheader class="md-primary">Time to complete formatting</md-subheader>
+          <md-card-content>
+            <span>{{ formatTime | number }} ms</span>
+          </md-card-content>
+        </md-card>
+
+        <md-card>
+          <md-subheader class="md-primary">Time to complete validate</md-subheader>
+          <md-card-content>
+            <span>{{ validateTime | number }} ms</span>
+          </md-card-content>
+        </md-card>
+      </div>
+    </div>
+  </md-content>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.2/angular.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.2/angular-animate.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.2/angular-messages.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.2/angular-aria.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angular_material/0.10.0/angular-material.min.js"></script>
   <script src="../../dist/ng-rut.js"></script>
   <script src="scripts.js"></script>
 </body>

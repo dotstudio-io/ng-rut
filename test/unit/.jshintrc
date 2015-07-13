@@ -3,6 +3,7 @@
   "node": true,
 
   "globals": {
-    "inject": true
+    "inject": true,
+    "angular": true
   }
 }

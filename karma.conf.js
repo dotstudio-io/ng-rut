@@ -15,8 +15,8 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
-      'https://ajax.googleapis.com/ajax/libs/angularjs/1.4.1/angular.js',
-      'https://ajax.googleapis.com/ajax/libs/angularjs/1.2.26/angular-mocks.js',
+      'https://ajax.googleapis.com/ajax/libs/angularjs/1.4.2/angular.js',
+      'https://ajax.googleapis.com/ajax/libs/angularjs/1.4.2/angular-mocks.js',
 
       'dist/ng-rut.js',
 
