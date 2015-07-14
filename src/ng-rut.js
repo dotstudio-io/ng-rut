@@ -27,7 +27,7 @@
     /* Obtain the verifier digit */
     var verifier = value.substr(-1, 1);
 
-    /* Obtain the RUT digits and Keep only numbers */
+    /* Obtain the RUT digits and keep only numbers */
     var digits = value.substr(0, value.length - 1).replace(/\D+/g, '');
 
     /* Return array of parts... */
@@ -40,7 +40,7 @@
   }
 
   /**
-   * Formats a string as a valid RUT number.
+   * Formats a string as a RUT number.
    *
    * @param {String} value The value to format.
    * @return {String} The formatted string.
