@@ -1,40 +1,41 @@
 (function(angular) {
   "use strict";
-  function clean(val) {
-    val = String(val);
-    var verifier = val.substr(-1, 1);
-    var digits = val.substr(0, val.length - 1);
-    verifier = verifier.replace(/[^\dk]+/gi, "");
-    digits = digits.replace(/\D+/g, "");
+  function clean(value, parts) {
+    value = String(value).replace(/[^\dk]+/gi, "");
+    var verifier = value.substr(-1, 1);
+    var digits = value.substr(0, value.length - 1).replace(/\D+/g, "");
+    if (parts) {
+      return [ digits, verifier ];
+    }
     return digits + verifier;
   }
-  function format(val) {
-    val = clean(val);
-    if (val.length < 3) {
-      return val;
+  function format(value) {
+    value = clean(value);
+    if (value.length < 3) {
+      return value;
     }
-    var verifier = val.substr(-1, 1);
-    var digits = val.substr(0, val.length - 1);
-    digits = digits.replace(/(\d)(?=(\d{3})+\b)/g, "$1.");
-    return digits + "-" + verifier;
+    var parts = clean(value, true);
+    parts[0] = parts[0].replace(/(\d)(?=(\d{3})+\b)/g, "$1.");
+    return parts.join("-");
   }
-  function validate(val) {
-    val = clean(val);
-    if (!val || !val.length) {
+  function validate(value) {
+    if (!value || !String(value).length) {
       return true;
     }
-    var verifier = val.substr(-1, 1);
-    var digits = val.substr(0, val.length - 1);
-    var m = 0;
-    var s = 1;
+    var parts = clean(value, true);
     var k = "k";
-    if (isNaN(verifier)) {
-      verifier = k;
+    var m = 0;
+    var r = 1;
+    if (isNaN(parts[1])) {
+      parts[1] = k;
     }
-    for (;digits; digits = Math.floor(digits / 10)) {
-      s = (s + digits % 10 * (9 - m++ % 6)) % 11;
+    for (;parts[0]; parts[0] = Math.floor(Number(parts[0]) / 10)) {
+      r = (r + parts[0] % 10 * (9 - m++ % 6)) % 11;
     }
-    return String(s ? s - 1 : k) === verifier;
+    if (r) {
+      return String(r - 1) === parts[1];
+    }
+    return k === parts[1];
   }
   angular.module("ngRut", []).factory("ngRut", function() {
     return {
@@ -42,16 +43,17 @@
       format: format,
       clean: clean
     };
-  }).directive("ngRut", function() {
+  }).directive("ngRut", [ "$log", function($log) {
     return {
       restrict: "A",
       require: "ngModel",
       link: function($scope, $element, $attrs, ngModel) {
         if ($element[0].tagName !== "INPUT") {
-          throw new TypeError("NG-RUT: This directive must be used on INPUT elements only and element is " + $element[0].tagName + ".");
+          $log.error("NG-RUT: This directive must be used on INPUT elements only and element is " + $element[0].tagName + ".");
+          return;
         }
         if (!ngModel) {
-          console.warn("NG-RUT: No ngModel associated to the input element");
+          $log.warn("NG-RUT: No ngModel associated to the input element");
           return;
         }
         ngModel.$formatters.unshift(function(value) {
@@ -66,17 +68,17 @@
         });
       }
     };
-  }).filter("ngRut", function() {
-    return function(val, action) {
+  } ]).filter("ngRut", function() {
+    return function(value, action) {
       switch (action) {
        case "validate":
-        return validate(val);
+        return validate(value);
 
        case "clean":
-        return clean(val);
+        return clean(value);
 
        default:
-        return format(val);
+        return format(value);
       }
     };
   });

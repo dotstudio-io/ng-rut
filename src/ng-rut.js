@@ -1,14 +1,12 @@
 /**
  * AngularJS Chilean RUT Utilities.
  *
- * Provides a directive, a constant and a filter which provides Chilean RUT cleaning,
- * validation and formatting.
+ * Provides a directive, a service and a filter with Chilean RUT cleaning, validation and formatting.
  *
  * @name ng-rut
  * @module ngRut
  * @type AngularJS Module
  * @requires AngularJS 1.2+
- * @version 1.0.0
  * @author Santiago G. Marín <santiago@finaldevstudio.com>
  */
 
@@ -18,87 +16,85 @@
   /**
    * Clean a string out of invalid RUT characters.
    *
-   * @param {String} val The value to clean.
+   * @param {String} value The value to clean.
+   * @param {Boolean} parts If the function should return an array of parts instead.
    * @return {String} The cleaned string.
    */
-  function clean(val) {
-    val = String(val);
+  function clean(value, parts) {
+    /* Ensure value is a string and keep only numbers and 'k' or 'K' */
+    value = String(value).replace(/[^\dk]+/gi, '');
 
     /* Obtain the verifier digit */
-    var verifier = val.substr(-1, 1);
+    var verifier = value.substr(-1, 1);
 
-    /* Obtain the RUT digits */
-    var digits = val.substr(0, val.length - 1);
+    /* Obtain the RUT digits and Keep only numbers */
+    var digits = value.substr(0, value.length - 1).replace(/\D+/g, '');
 
-    /* Keep only digits and 'k' or 'K' */
-    verifier = verifier.replace(/[^\dk]+/gi, '');
+    /* Return array of parts... */
+    if (parts) {
+      return [digits, verifier];
+    }
 
-    /* Keep only digits */
-    digits = digits.replace(/\D+/g, '');
-
+    /* ... or return a string */
     return digits + verifier;
   }
 
   /**
    * Formats a string as a valid RUT number.
    *
-   * @param {String} val The value to format.
+   * @param {String} value The value to format.
    * @return {String} The formatted string.
    */
-  function format(val) {
-    val = clean(val);
+  function format(value) {
+    value = clean(value);
 
-    /* Check if value is too short */
-    if (val.length < 3) {
-      return val;
+    /* Check if value is too short to format */
+    if (value.length < 3) {
+      return value;
     }
 
-    /* Obtain the verifier digit */
-    var verifier = val.substr(-1, 1);
-
-    /* Obtain the RUT digits */
-    var digits = val.substr(0, val.length - 1);
+    var parts = clean(value, true);
 
     /* Group digits with dots */
-    digits = digits.replace(/(\d)(?=(\d{3})+\b)/g, '$1.');
+    parts[0] = parts[0].replace(/(\d)(?=(\d{3})+\b)/g, '$1.');
 
-    return digits + '-' + verifier;
+    return parts.join('-');
   }
 
   /**
    * Validates a string for a valid RUT number.
    *
-   * @param {String} val The string to validate.
+   * @param {String} value The string to validate.
    * @return {Boolean} If the string is a valid RUT number.
    */
-  function validate(val) {
-    val = clean(val);
-
+  function validate(value) {
     /* Check if there's a value to validate */
-    if (!val || !val.length) {
+    if (!value || !String(value).length) {
       return true;
     }
 
-    /* Get verifier digit */
-    var verifier = val.substr(-1, 1);
-
-    /* get RUT digits */
-    var digits = val.substr(0, val.length - 1);
-
-    var m = 0;
-    var s = 1;
+    var parts = clean(value, true);
     var k = 'k';
+    var m = 0;
+    var r = 1;
 
-    /* If the verifier is not a number then it mus be 'k' */
-    if (isNaN(verifier)) {
-      verifier = k;
+    /* If the verifier is not a number then it must be 'k' */
+    if (isNaN(parts[1])) {
+      parts[1] = k;
     }
 
-    for (; digits; digits = Math.floor(digits / 10)) {
-      s = (s + digits % 10 * (9 - m++ % 6)) % 11;
+    /* Do the math :) */
+    for (; parts[0]; parts[0] = Math.floor(Number(parts[0]) / 10)) {
+      r = (r + parts[0] % 10 * (9 - m++ % 6)) % 11;
     }
 
-    return String(s ? s - 1 : k) === verifier;
+    /* Check if the RUT is valid against the result... */
+    if (r) {
+      return String(r - 1) === parts[1];
+    }
+
+    /* ... or against 'k' */
+    return k === parts[1];
   }
 
   /* Define the Angular module */
@@ -114,55 +110,64 @@
   }).
 
   /* Create the directive */
-  directive('ngRut', function () {
-    return {
-      /* Restrict to an attribute type */
-      restrict: 'A',
+  directive('ngRut', [
+    '$log',
 
-      /* Element must have ng-model attribute */
-      require: 'ngModel',
+    function ($log) {
 
-      link: function ($scope, $element, $attrs, ngModel) {
-        /* Check if $element is an input */
-        if ($element[0].tagName !== 'INPUT') {
-          throw new TypeError("NG-RUT: This directive must be used on INPUT elements only and element is " + $element[0].tagName + ".");
+      return {
+        /* Restrict to an attribute type */
+        restrict: 'A',
+
+        /* Element must have ng-model attribute */
+        require: 'ngModel',
+
+        link: function ($scope, $element, $attrs, ngModel) {
+          /* Check if $element is an input */
+          if ($element[0].tagName !== 'INPUT') {
+            $log.error("NG-RUT: This directive must be used on INPUT elements only and element is " + $element[0].tagName + ".");
+            return;
+          }
+
+          /* Check if the $element has an associated model */
+          if (!ngModel) {
+            $log.warn("NG-RUT: No ngModel associated to the input element");
+            return;
+          }
+
+          /* Model formatter */
+          ngModel.$formatters.unshift(function (value) {
+            ngModel.$setValidity('rut', validate(value));
+
+            return format(ngModel.$modelValue);
+          });
+
+          /* Model parser */
+          ngModel.$parsers.unshift(function (value) {
+            ngModel.$setValidity('rut', validate(value));
+            ngModel.$setViewValue(format(value));
+            ngModel.$render();
+
+            return clean(value);
+          });
         }
+      };
 
-        /* Check if it $element a NgModel associated */
-        if (!ngModel) {
-          console.warn("NG-RUT: No ngModel associated to the input element");
-          return;
-        }
-
-        ngModel.$formatters.unshift(function (value) {
-          ngModel.$setValidity('rut', validate(value));
-
-          return format(ngModel.$modelValue);
-        });
-
-        ngModel.$parsers.unshift(function (value) {
-          ngModel.$setValidity('rut', validate(value));
-          ngModel.$setViewValue(format(value));
-          ngModel.$render();
-
-          return clean(value);
-        });
-      }
-    };
-  }).
+    }
+  ]).
 
   /* Create the filter */
   filter('ngRut', function () {
-    return function (val, action) {
+    return function (value, action) {
       switch (action) {
         case 'validate':
-          return validate(val);
+          return validate(value);
 
         case 'clean':
-          return clean(val);
+          return clean(value);
 
         default:
-          return format(val);
+          return format(value);
       }
     };
   });
