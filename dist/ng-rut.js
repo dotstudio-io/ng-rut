@@ -49,11 +49,11 @@
       require: "ngModel",
       link: function($scope, $element, $attrs, ngModel) {
         if ($element[0].tagName !== "INPUT") {
-          $log.error("NG-RUT: This directive must be used on INPUT elements only and element is " + $element[0].tagName + ".");
+          $log.error("This directive must be used on INPUT elements only and element is %s", $element[0].tagName);
           return;
         }
         if (!ngModel) {
-          $log.warn("NG-RUT: No ngModel associated to the input element");
+          $log.warn("A model should be assigned to the input element!");
           return;
         }
         ngModel.$formatters.unshift(function(value) {

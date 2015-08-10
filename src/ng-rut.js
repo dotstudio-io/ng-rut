@@ -1,15 +1,3 @@
-/**
- * AngularJS Chilean RUT Utilities.
- *
- * Provides a directive, a service and a filter with Chilean RUT cleaning, validation and formatting.
- *
- * @name ng-rut
- * @module ngRut
- * @type AngularJS Module
- * @requires AngularJS 1.2+
- * @author Santiago G. Marín <santiago@finaldevstudio.com>
- */
-
 (function (angular) {
   'use strict';
 
@@ -125,13 +113,13 @@
         link: function ($scope, $element, $attrs, ngModel) {
           /* Check if $element is an input */
           if ($element[0].tagName !== 'INPUT') {
-            $log.error("NG-RUT: This directive must be used on INPUT elements only and element is " + $element[0].tagName + ".");
+            $log.error("This directive must be used on INPUT elements only and element is %s", $element[0].tagName);
             return;
           }
 
           /* Check if the $element has an associated model */
           if (!ngModel) {
-            $log.warn("NG-RUT: No ngModel associated to the input element");
+            $log.warn("A model should be assigned to the input element!");
             return;
           }
 
