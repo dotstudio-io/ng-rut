@@ -30,7 +30,6 @@
     ".travis.yml",
     ".gitignore",
     ".jshintrc",
-    "README.md",
     "LICENSE",
     "example",
     "tests",
