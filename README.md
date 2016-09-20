@@ -1,2 +1,3 @@
-# ng-rut
-Chilean RUT utils for Angular.
+# DEPRECATED
+
+Please use [fi-rut](https://github.com/FinalDevStudio/fi-rut).
